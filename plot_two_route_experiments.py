@@ -6,7 +6,7 @@ import seaborn as sns
 from ast import literal_eval
 
 ######### DATA IMPORTS AND PREPROCESSING
-path = "two_route_experiments_2.csv"
+path = "experiments/two_route_experiments_2.csv"
 
 df = pd.read_csv(path)
 

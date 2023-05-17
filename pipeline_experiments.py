@@ -1,19 +1,14 @@
-# This is a sample Python script.
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
-
-
-def main(epsilon):
+def main(epsilon):  # pass epsilon as an argument using argparse
     import numpy as np
     import tqdm
     import pickle
     import nolds
     import pandas as pd
-    from recommenders import heuristic_recommender, naive_recommender, random_recommender, constant_recommender, optimized_heuristic_recommender, aligned_heuristic_recommender
+    from recommenders import random_recommender, constant_recommender, optimized_heuristic_recommender, aligned_heuristic_recommender
     from single_run import single_run
     from routing_networks import braess_augmented_network
-    from run_functions import calculate_alignment
+    import os
 
     # Base Settings Which Will Not Change
     N_AGENTS = 100
@@ -27,11 +22,7 @@ def main(epsilon):
     ALPHA = 0.1
 
     # Parameters which will be Varied
-    # EPSILON = 0
-    # sizeEpsilon = 7  # 18
-    epsilons = [epsilon] 
-    # , 0.01, 0.04, 0.08, 0.1, 0.15, 0.2]  # [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.15, 
-    # 0.3, 0.45, 0.6, 0.75, 0.9, 1]  # np.linspace(0, 1, sizeEpsilon) 
+    epsilons = [epsilon]
     
     QINIT = "Variable"
     sizeQinit = 4
@@ -40,21 +31,10 @@ def main(epsilon):
         "nash": np.array([-2, -2, -2]),
         "aligned": "ALIGNED",
         "misaligned": "MISALIGNED"
-        # "cdu": np.array([-2, -1.5, -1]),
-        # "cud": np.array([-1.5, -2, -1]),
-        # "ucd": np.array([-1, -2, -1.5]),
-        # "udc": np.array([-1, -1.5, -2]),
-        # "dcu": np.array([-2, -1, -1.5]),
-        # "duc": np.array([-1.5, -1, -2])
     }
 
     recommenders = {
-        # "heuristic": heuristic_recommender,
-        # "optimized_action_minimize": lambda Q, n_agents: optimized_heuristic_recommender(Q, n_agents, method="action", minimize=True),
-        # "optimized_action_maximize": lambda Q, n_agents: optimized_heuristic_recommender(Q, n_agents, method="action", minimize=False),
-        # "optimized_estimate_minimize": lambda Q, n_agents: optimized_heuristic_recommender(Q, n_agents, method="estimate", minimize=True),
         "optimized_estimate_maximize": lambda Q, n_agents: optimized_heuristic_recommender(Q, n_agents, method="estimate", minimize=False),
-        # "naive": naive_recommender,
         "random": random_recommender,
         "none": constant_recommender,
         "aligned_heuristic": aligned_heuristic_recommender,
@@ -62,13 +42,10 @@ def main(epsilon):
 
     NAME = f"sweep_aligned_heuristic_e{epsilon}_q{sizeQinit}_N{N_AGENTS}_S{N_STATES}_A{N_ACTIONS}_I{N_ITER}_g{GAMMA}_a{ALPHA}_q{QINIT}"
 
-    results = []
-
-    import os
-
     if not os.path.isdir(NAME):
         os.mkdir(NAME)
 
+    results = []
     for i, e in enumerate(tqdm.tqdm(epsilons)):
         for norm, initTable in qinits.items():
             for recommender_type, recommender_function in recommenders.items():
@@ -109,7 +86,6 @@ def main(epsilon):
                         "T_std": T_std,
                         "Lyapunov": L,
                         "repetition": t,
-                        # "oneShot": oneShot,
                         "groups_mean": groups_mean,
                         "groups_var": groups_var,
                         "Qvar_mean": Qvar_mean,
@@ -137,5 +113,3 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     main(args.epsilon)
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
