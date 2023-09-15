@@ -1,16 +1,25 @@
 import numpy as np
 from run_functions import *
 from agent_functions import *
-
+import math
 
 def single_run(routing_network, n_agents, n_states, n_actions, n_iter, epsilon, gamma, alpha, q_initial, recommender):
     Q = initialize_q_table(q_initial, n_agents, n_states, n_actions)
     alpha = initialize_learning_rates(alpha, n_agents)
-    epsilon = initialize_exploration_rates(epsilon, n_agents)
+
+    eps_decay = n_iter/8
+    if epsilon == "DECAYED":
+        eps_start = 1
+        eps_end = 0
+    else:
+        eps_start = epsilon
+        eps_end = epsilon
+
     data = {}
     ind = np.arange(n_agents)
 
     for t in range(n_iter):
+        epsilon = (eps_end + (eps_start - eps_end) * math.exp(-1. * t / eps_decay))
 
         S = recommender(Q, n_agents)
         A = e_greedy_select_action(Q, S, epsilon)
@@ -21,7 +30,7 @@ def single_run(routing_network, n_agents, n_states, n_actions, n_iter, epsilon, 
         data[t] = {"nA": np.bincount(A, minlength=3),
                    "R": R,
                    "Qmean": Q.mean(axis=1).mean(axis=0),
-                   "groups": count_groups(Q[ind, S, :], 0.1),
+                   # "groups": count_groups(Q[ind, S, :], 0.1),
                    "Qvar": Q[ind, S, :].var(axis=0),
                    "T": travel_time_per_route,
                    "sum_of_belief_updates": sum_of_belief_updates,
