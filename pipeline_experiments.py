@@ -22,7 +22,7 @@ def main(epsilon):  # pass epsilon as an argument using argparse
     ALPHA = 0.1
 
     # Parameters which will be Varied
-    epsilons = ["DECAYED"]
+    epsilons = [epsilon]
     
     QINIT = "Variable"
     sizeQinit = 4
