@@ -33,7 +33,7 @@ def parallel_function(n_agents, n_states, recommender_type, recommender_function
     # Base Settings Which Will Not Change
     N_ACTIONS = 3
     N_ITER = 10000
-    N_REPEATS = 1
+    N_REPEATS = 40
     EPSILON = "DECAYED"
     GAMMA = 0
     ALPHA = 0.1
@@ -115,8 +115,8 @@ def main():  # pass epsilon as an argument using argparse
     epsilon = "DECAYED"
 
     # Parameters which will be Varied
-    numbers_of_states = [3] # np.arange(3, 100, 10)
-    numbers_of_agents = [10] # np.arange(100, 1000, 100)
+    numbers_of_states = np.arange(3, 100, 10)
+    numbers_of_agents = np.arange(100, 1000, 100)
     recommenders = {
         "optimized_estimate_maximize": heuristic_estimate_maximize,
         "random": random_recommender,
