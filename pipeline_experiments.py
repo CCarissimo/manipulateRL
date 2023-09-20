@@ -117,7 +117,7 @@ def main():  # pass epsilon as an argument using argparse
     epsilon = "DECAYED"
 
     # Parameters which will be Varied
-    numbers_of_states = np.arange(1, 100, 10)
+    numbers_of_states = np.arange(3, 100, 10)
     numbers_of_agents = np.arange(100, 1000, 100)
     recommenders = {
         "optimized_estimate_maximize": heuristic_estimate_maximize,
