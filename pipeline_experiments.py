@@ -117,13 +117,13 @@ def main():  # pass epsilon as an argument using argparse
     epsilon = "DECAYED"
 
     # Parameters which will be Varied
-    numbers_of_states = np.arange(3, 100, 10)
+    numbers_of_states = np.arange(1, 100, 10)
     numbers_of_agents = np.arange(100, 1000, 100)
     recommenders = {
         "optimized_estimate_maximize": heuristic_estimate_maximize,
         "random": random_recommender,
         "none": constant_recommender,
-        "aligned_heuristic": aligned_heuristic_recommender,
+        # "aligned_heuristic": aligned_heuristic_recommender,
     }
 
     NAME = f"sweep_size_e{epsilon}_qUNIFORM_Nvariable_Svariable_A{N_ACTIONS}_I{N_ITER}_g{GAMMA}_a{ALPHA}"
