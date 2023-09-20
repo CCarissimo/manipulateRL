@@ -80,6 +80,8 @@ def parallel_function(n_agents, n_states, recommender_type, recommender_function
 
         results.append(row)
 
+    return results
+
 
 def run_apply_async_multiprocessing(func, argument_list, num_processes):
     pool = mp.Pool(processes=num_processes)
