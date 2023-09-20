@@ -56,13 +56,13 @@ def parallel_function(n_agents, n_states, recommender_type, recommender_function
         Qvar = [M[t]["Qvar"] for t in range(0, N_ITER)]
         Qvar_mean = np.mean(Qvar)
 
-        if recommender_type == "none":
-            alignment = None
-            alignment_all = None
-        else:
-            alignment = np.array([M[t]["alignment"][1] for t in range(int(0.8 * N_ITER), N_ITER)])
-            alignment_all = np.array([M[t]["alignment"][1] for t in range(N_ITER)]).mean(axis=0)
-            alignment = alignment.mean(axis=0)
+        # if recommender_type == "none":
+        #     alignment = None
+        #     alignment_all = None
+        # else:
+        #     alignment = np.array([M[t]["alignment"][1] for t in range(int(0.8 * N_ITER), N_ITER)])
+        #     alignment_all = np.array([M[t]["alignment"][1] for t in range(N_ITER)]).mean(axis=0)
+        #     alignment = alignment.mean(axis=0)
 
         row = {
             "T_mean": T,
@@ -74,8 +74,8 @@ def parallel_function(n_agents, n_states, recommender_type, recommender_function
             # "groups_var": groups_var,
             "Qvar_mean": Qvar_mean,
             "recommender_type": recommender_type,
-            "alignment": alignment,
-            "alignment_all": alignment_all
+            # "alignment": alignment,
+            # "alignment_all": alignment_all
         }
 
         results.append(row)
