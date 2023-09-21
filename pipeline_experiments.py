@@ -29,7 +29,7 @@ def save_pickle_with_unique_filename(data, filename):
         pickle.dump(data, file)
 
 
-def parallel_function(n_agents, n_states, recommender_type, recommender_function):
+def parallel_function(path, n_agents, n_states, recommender_type, recommender_function):
     # Base Settings Which Will Not Change
     N_ACTIONS = 3
     N_ITER = 10000
@@ -39,12 +39,21 @@ def parallel_function(n_agents, n_states, recommender_type, recommender_function
     ALPHA = 0.1
     initTable = "UNIFORM"
 
+    path_to_experiment = f"{path}/n{n_agents}_s{n_states}_rec{recommender_type}"
+
+    if not os.path.isdir(experiment):
+        os.mkdir(experiment)
+
     results = []
     for t in range(0, N_REPEATS):
         M = single_run(braess_augmented_network, n_agents, n_states, N_ACTIONS, N_ITER, EPSILON, GAMMA,
                        ALPHA, initTable, recommender_function)
 
         W = [M[t]["R"].mean() for t in range(0, N_ITER)]
+
+        filename = get_unique_filename(f"{path_to_experiment}/timeseries.npy")
+        np.save(filename, np.array(W))
+
         L = nolds.lyap_r(W)
         T = np.mean(W[int(0.8 * N_ITER):N_ITER])
         T_all = np.mean(W)
@@ -103,7 +112,7 @@ def heuristic_estimate_maximize(Q, n_agents):
     return optimized_heuristic_recommender(Q, n_agents, method="estimate", minimize=False)
 
 
-def main():  # pass epsilon as an argument using argparse
+def main(path):  # pass epsilon as an argument using argparse
 
     # Base Settings Which Will Not Change
     N_AGENTS = 100
@@ -126,7 +135,7 @@ def main():  # pass epsilon as an argument using argparse
         # "aligned_heuristic": aligned_heuristic_recommender,
     }
 
-    NAME = f"sweep_size_e{epsilon}_qUNIFORM_Nvariable_Svariable_A{N_ACTIONS}_I{N_ITER}_g{GAMMA}_a{ALPHA}"
+    NAME = f"{path}/sweep_size_e{epsilon}_qUNIFORM_Nvariable_Svariable_A{N_ACTIONS}_I{N_ITER}_g{GAMMA}_a{ALPHA}"
 
     if not os.path.isdir(NAME):
         os.mkdir(NAME)
@@ -136,7 +145,7 @@ def main():  # pass epsilon as an argument using argparse
     for n_agents in numbers_of_agents:
         for n_states in numbers_of_states:
             for recommender_type, recommender_function in recommenders.items():
-                parameter_tuple = (n_agents, n_states, recommender_type, recommender_function)
+                parameter_tuple = (path, n_agents, n_states, recommender_type, recommender_function)
                 argument_list.append(parameter_tuple)
     results = run_apply_async_multiprocessing(parallel_function, argument_list=argument_list, num_processes=num_cpus)
 
@@ -149,6 +158,7 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
+    parser.add_argument("path", type=str)
     args = parser.parse_args()
 
-    main()
+    main(args.path)
