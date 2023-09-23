@@ -17,28 +17,28 @@ def main(path):
 			timeseries = np.load(filepath)
 
 			T = np.mean(timeseries[int(0.8 * len(timeseries)):len(timeseries)])
-        	T_all = np.mean(timeseries)
-        	T_std = np.std(timeseries[int(0.8 * len(timeseries)):len(timeseries)])
+			T_all = np.mean(timeseries)
+			T_std = np.std(timeseries[int(0.8 * len(timeseries)):len(timeseries)])
 
-        	row = {
-	        	"recommender_type": recommender_type,
-	        	"n_agents": n_agentsn,
-	        	"n_states": n_states,
-	        	"T_mean": T,
-	            "T_mean_all": T_all,
-	            "T_std": T_std,
-        	}
-        	results.append(row)
+			row = {
+				"recommender_type": recommender_type,
+				"n_agents": n_agentsn,
+				"n_states": n_states,
+				"T_mean": T,
+				"T_mean_all": T_all,
+				"T_std": T_std,
+			}
+			results.append(row)
 
-    df = pd.DataFrame(results)
-    df.to_csv(path + "/dataframe.csv")
+	df = pd.DataFrame(results)
+	df.to_csv(path + "/dataframe.csv")
 
 
 if __name__ == "__main__":
 	import argparse
 
 	parser = argparse.ArgumentParser()
-    parser.add_argument("path", type=str)
-    args = parser.parse_args()
+	parser.add_argument("path", type=str)
+	args = parser.parse_args()
 
-    main(args.path)
+	main(args.path)
