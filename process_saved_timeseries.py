@@ -7,11 +7,13 @@ def main(path):
     for folder in glob.glob(path + "/*"):
 
         # f"{path}/n{n_agents}_s{n_states}_rec{recommender_type}"
-        split = folder.split("_")
-        n_states = split[1].split("s")[-1]
-        n_agents = split[0].split("n")[-1]
-        recommender_type = split[2].split("rec")[-1]
+        split = folder.split("/")[-1].split("_")
+        n_states = split[1].replace("s", "")
+        n_agents = split[0].replace("n", "")
+        recommender_type = split[2].replace("rec", "")
 
+        print(recommender_type, n_states, n_agents)
+        
         for file in glob.glob(folder + "/*"):
             timeseries = np.load(file)
 
