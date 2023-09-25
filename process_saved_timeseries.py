@@ -1,10 +1,12 @@
 import glob
+import pickle
+
 import numpy as np
 import pandas as pd
 
 
 def keep_timeseries(path):
-    results = []
+    results = dict()
     for folder in glob.glob(path + "/n*"):
 
         # f"{path}/n{n_agents}_s{n_states}_rec{recommender_type}"
@@ -21,21 +23,21 @@ def keep_timeseries(path):
             T.append(timeseries)
         timeseries = np.vstack(T)
         timeseries_mean = timeseries.mean(axis=0)
-        timeseries_p25 = np.percentile(timeseries, 0.25, axis=0)
-        timeseries_p75 = np.percentile(timeseries, 0.75, axis=0)
+        timeseries_median = np.percentile(timeseries, 50, axis=0)
+        timeseries_p25 = np.percentile(timeseries, 25, axis=0)
+        timeseries_p75 = np.percentile(timeseries, 75, axis=0)
 
-        row = {
-            "recommender_type": recommender_type,
-            "n_agents": n_agents,
-            "n_states": n_states,
-            "T_mean": T,
-            "T_mean_all": T_all,
-            "T_std": T_std,
+        d = {
+            "mean": timeseries_mean,
+            "median": timeseries_median,
+            "percentile25": timeseries_p25,
+            "percentile75": timeseries_p75
         }
-        results.append(row)
 
-    df = pd.DataFrame(results)
-    df.to_csv(path + "/dataframe.csv")
+        results[(recommender_type, n_agents, n_states)] = d
+
+    with open(path + "/timeseries.pkl", "wb") as file:
+        pickle.dump(results, file)
 
 
 def main(path):
