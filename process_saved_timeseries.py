@@ -26,7 +26,7 @@ def keep_timeseries(path):
 
         row = {
             "recommender_type": recommender_type,
-            "n_agents": n_agentsn,
+            "n_agents": n_agents,
             "n_states": n_states,
             "T_mean": T,
             "T_mean_all": T_all,
@@ -59,7 +59,7 @@ def main(path):
 
             row = {
                 "recommender_type": recommender_type,
-                "n_agents": n_agentsn,
+                "n_agents": n_agents,
                 "n_states": n_states,
                 "T_mean": T,
                 "T_mean_all": T_all,
