@@ -23,8 +23,8 @@ def keep_timeseries(path):
             T.append(timeseries)
         timeseries = np.vstack(T)
         timeseries_mean = timeseries.mean(axis=0)
-        timeseries_p25 = np.percentile(timeseries, 0.25, axis=0)
-        timeseries_p75 = np.percentile(timeseries, 0.75, axis=0)
+        timeseries_p25 = np.percentile(timeseries, 25, axis=0)
+        timeseries_p75 = np.percentile(timeseries, 75, axis=0)
 
         d = {
             "mean": timeseries_mean,
