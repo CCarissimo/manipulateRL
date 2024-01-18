@@ -4,7 +4,6 @@ import pickle
 import pandas as pd
 from recommenders import random_recommender, constant_recommender, optimized_heuristic_recommender, aligned_heuristic_recommender
 from single_run_large_braess import single_run
-from routing_networks import braess_augmented_network
 import os
 import multiprocessing as mp
 from dataclasses import dataclass
@@ -39,7 +38,7 @@ def save_pickle_with_unique_filename(data, filename):
 
 def parallel_function(config):
     # Base Settings Which Will Not Change
-    N_ACTIONS = 3
+    N_ACTIONS = 20
     N_ITER = 10000
     N_REPEATS = 40
     EPSILON = "DECAYED"
@@ -47,7 +46,7 @@ def parallel_function(config):
     ALPHA = 0.1
     initTable = "UNIFORM"
 
-    path_to_experiment = f"{config.path}/n{config.n_agents}_s{config.n_states}_rec{config.recommender}"
+    path_to_experiment = f"{config.path}/n{config.n_agents}_s{config.n_states}_{config.recommender}"
 
     if not os.path.isdir(path_to_experiment):
         os.mkdir(path_to_experiment)
@@ -121,7 +120,7 @@ def main(path):  # pass epsilon as an argument using argparse
 
     # Base Settings Which Will Not Change
     N_AGENTS = 100
-    N_STATES = 3
+    N_STATES = 20
     N_ACTIONS = 20
     N_ITER = 10000
     GAMMA = 0
@@ -129,7 +128,7 @@ def main(path):  # pass epsilon as an argument using argparse
     epsilon = "DECAYED"
 
     # Parameters which will be Varied
-    numbers_of_states = np.arange(20, 100, 10)
+    numbers_of_states = np.arange(20, 200, 10)
     # numbers_of_agents = np.arange(100, 1000, 100)
     recommenders = {
         "optimized": 0,
@@ -146,6 +145,8 @@ def main(path):  # pass epsilon as an argument using argparse
     argument_list = []
     for n_states in numbers_of_states:
         for recommender in recommenders.keys():
+            if n_states > 20 and recommender == "constant":
+                continue
             config = RecommenderExperimentConfig(path, N_AGENTS, n_states, recommender)
             argument_list.append(config)
     results = run_apply_async_multiprocessing(parallel_function, argument_list=argument_list, num_processes=num_cpus)

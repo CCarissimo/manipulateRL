@@ -3,7 +3,7 @@ from run_functions import *
 from agent_functions import *
 from routing_networks import large_braess_network
 import math
-import igraph as i
+import igraph as ig
 from recommenders import general_heuristic_recommender
 
 
