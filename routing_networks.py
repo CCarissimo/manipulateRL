@@ -1,6 +1,52 @@
 import numpy as np
+import igraph as ig
 
 
+g = ig.Graph(
+        9,
+        [(0, 1), (0, 2),
+         (1, 3), (1, 4), (1, 2),
+         (2, 4), (2, 5),
+         (3, 4), (3, 6),
+         (4, 6), (4, 7), (4, 5),
+         (5, 7),
+         (6, 8), (6, 7),
+         (7, 8)],
+        directed=True
+    )
+weights = ["x", 1, "x", 1, 0, "x", 1, 0, 1, "x", 1, 0, "x", 1, 0, "x"]
+g.es["cost"] = weights
+adj = g.get_adjacency(attribute="cost")
+paths = g.get_all_simple_paths(0, to=8)
+
+
+def large_braess_network(A, paths, adj, n_agents):
+    visits = np.zeros((9, 9))
+    for a in A:
+        path = paths[a]
+        for i in range(len(path) - 1):
+            node = path[i]
+            next_node = path[i + 1]
+            visits[node, next_node] += 1
+
+    costs = np.zeros((9, 9))
+    for i in range(9):
+        for j in range(9):
+            if adj[i, j] == 'x':
+                costs[i, j] = visits[i, j] / 100
+            elif adj[i, j] == 1:
+                costs[i, j] = 1
+
+    R = np.zeros((n_agents))
+    for agent, a in enumerate(A):
+        path = paths[a]
+        cost = 0
+        for i in range(len(path) - 1):
+            node = path[i]
+            next_node = path[i + 1]
+            cost += costs[node, next_node]
+        R[agent] = cost
+    return -R
 
 
 def braess_augmented_network(A):

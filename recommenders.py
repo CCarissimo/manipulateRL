@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.optimize import minimize
+from routing_networks import large_braess_network, adj, paths
 
 
 def heuristic_recommender(Q, n_agents):
@@ -365,4 +366,131 @@ def aligned_heuristic_recommender(Q, n_agents):
     action = (-(- np.array(travel_time_estimate) - Q.max(axis=2))).mean(axis=0).argmax()
     S[misaligned] = action
 
+    return S.astype(int)
+
+
+def general_heuristic_recommender(Q, S, n_agents, n_states, n_actions):
+    # calculate the argmax values for actions, final column
+    argmax = Q.argmax(axis=2)
+
+    # find agents which can only be forced to do 1 thing
+    forced_actions = np.zeros(n_actions).astype(int)
+    forced_agents = np.zeros(n_agents, dtype=bool)
+    for i in range(n_agents):
+        if all(argmax[i] == argmax[i][0]):
+            #  print("agent", i, "action", argmax[i][0])
+            forced_actions[argmax[i][0]] += 1
+            forced_agents[i] = True
+            S[i] = Q[i, [j for j in range(n_states)], argmax[i]].argmax()
+
+    # compute new optimal assignments
+    ideal_assignment = np.array([0, 0, 0, 0, 0, 17, 0, 33, 0, 0, 0, 0, 0, 0, 0, 33, 0, 17, 0, 0])
+    assignment = forced_actions + (ideal_assignment) * ((n_agents - forced_actions.sum()) / n_agents)
+    # print(assignment, assignment.sum())
+    # optimum = np.array([int(50-forced_actions[2]/2), int(50-forced_actions[2]/2), forced_actions[2]]) # social_optimum(None)
+    constructed_action_vector = []
+    for i, a in enumerate(assignment):
+        constructed_action_vector.append(np.repeat(i, a))
+    constructed_action_vector = np.concatenate(constructed_action_vector).flatten()
+    estimate = large_braess_network(constructed_action_vector, paths, adj, n_agents)  # optimistic_estimate(None)
+
+    # set priority as the social optimum assignment minus the forced actions
+    initial_priority = assignment - forced_actions
+    argmax_count = np.bincount(argmax[np.logical_not(forced_agents)].flatten(), minlength=n_actions)
+    priority = initial_priority * 1 / (1 + argmax_count)
+
+    # generate table for recommendation assignments
+    agent_boolean = np.logical_not(forced_agents)
+    agent_indices = np.where(agent_boolean == True)[0]
+
+    table = {}
+    for i in range(n_actions):
+        index, state = sort_by_belief_improvement(Q, argmax, agent_indices, i, "estimate", estimate, minimize=True)
+        table[i] = {"index": index, "state": state}
+
+    # iterate assignment for each table row, for all actions, until all agents have been assigned a state
+    done = False
+    blacklist = []
+    actions = np.array([k for k in table.keys()])
+    while not done:
+
+        # delete any keys which have empty lists
+        delete_keys = []
+        for i in table.keys():
+            if len(table[i]["index"]) == 0:
+                delete_keys.append(i)
+        for i in delete_keys:
+            del table[i]
+
+        # check if table is done
+        if len(table.keys()) == 0:
+            # print("DONE")
+            break
+
+        # look at the first row over all remaining keys
+        row_indices = np.array([table[i]["index"][0] for i in table.keys()])
+        row_states = np.array([table[i]["state"][0] for i in table.keys()])
+
+        # print("indices", row_indices)
+        # print("states", row_states)
+
+        unique, index, counts = np.unique(row_indices, return_counts=True, return_index=True)
+        actions_map = argmax[row_indices, row_states]
+        # print("unique", unique, "index", index, "counts", counts, "actions", actions_map)
+
+        for i in range(len(unique)):
+            # print(i)
+            agent = unique[i]
+
+            if agent in blacklist:
+                continue
+
+            if counts[i] <= 1:
+                recommendation = row_states[index[i]]
+                action = Q[agent, recommendation].argmax()
+                if priority[action] > 0:
+                    S[agent] = recommendation
+                    priority[action] -= 1
+                else:
+                    continue
+
+            elif counts[i] > 1:
+                # check priority of actions
+                where_agent = np.where(row_indices == agent)[0]
+                actions_agent = actions_map[where_agent]
+                priority_actions = priority[actions_agent]
+                # print("priorities", where_agent, actions_agent, priority_actions)
+                if priority_actions.sum() <= 0:
+                    continue
+
+                # if all priorities equal
+                if all(priority_actions) == priority_actions[0]:
+                    sub_states = row_states[where_agent]
+                    #  print("sub_states", sub_states)
+                    #  print(Q[agent, sub_states, actions_agent])
+                    #  print(np.argmax(Q[agent, sub_states, actions_agent]))
+                    recommendation = np.argmax(Q[agent, sub_states, actions_agent])
+                    action = np.argmax(Q[agent, recommendation])
+                    S[agent] = recommendation
+                    priority[action] -= 1
+
+                # otherwise, pick the largest priority action
+                else:
+                    max_priority_action = np.argmax(priority_actions)
+                    max_priority_index = where_agent[max_priority_action]
+                    recommendation = row_states[max_priority_index]
+                    S[agent] = recommendation
+                    action = Q[agent, recommendation].argmax()
+                    priority[action] -= 1
+
+            blacklist.append(agent)
+
+        #  print("exiting unique loop")
+
+        for i in table.keys():
+            table[i]["index"].pop(0)
+            table[i]["state"].pop(0)
+
+    # print(done)
+    # print(table)
     return S.astype(int)
